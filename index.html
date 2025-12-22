@@ -5,29 +5,39 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Mini Navigateur</title>
   <style>
-    :root { --bg:#0f1720; --panel:#111827; --muted:#9aa4b2; --accent:#0ea5a1; }
-    html,body { height:100%; margin:0; font-family:Inter, Arial, sans-serif; background:var(--bg); color:#e6eef3; }
-    .app { display:grid; grid-template-columns:220px 1fr; height:100vh; }
-    .sidebar { background:var(--panel); padding:12px; border-right:1px solid rgba(255,255,255,0.03); }
-    .sidebar h3 { margin:6px 0 10px; font-size:14px; color:var(--muted); }
-    .bookmark { display:block; padding:8px; margin-bottom:6px; background:rgba(255,255,255,0.02); border-radius:6px; color:#e6eef3; text-decoration:none; }
-    .bookmark:hover { background:rgba(255,255,255,0.03); }
-    .main { display:flex; flex-direction:column; }
-    .toolbar { display:flex; gap:8px; padding:10px; align-items:center; background:linear-gradient(180deg, rgba(255,255,255,0.02), transparent); }
-    .btn { background:transparent; border:1px solid rgba(255,255,255,0.04); color:#e6eef3; padding:6px 10px; border-radius:6px; cursor:pointer; }
-    .btn:disabled { opacity:0.4; cursor:default }
-    #url { flex:1; padding:8px 10px; border-radius:6px; border:none; background:#0b1220; color:#e6eef3; }
-    iframe { border:none; flex:1; width:100%; height:100%; background:white }
-    .footer { padding:6px 10px; font-size:12px; color:var(--muted); }
-    @media (max-width:700px){ .app{grid-template-columns:1fr} .sidebar{display:none} }
-    /* Recherche locale */
-    .search-results { position:absolute; top:56px; left:260px; right:20px; background:rgba(11,18,32,0.98); border:1px solid rgba(255,255,255,0.03); border-radius:8px; max-height:260px; overflow:auto; box-shadow:0 6px 18px rgba(0,0,0,0.6); z-index:30; }
+    /* Thème sombre inspiré de Nouvel onglet */
+    html,body{height:100%;margin:0;font-family:Arial, Helvetica, sans-serif;background:#000;color:#e8eaed}
+    .topbar{display:flex;align-items:center;justify-content:space-between;padding:8px 16px;border-bottom:1px solid rgba(255,255,255,0.03);background:transparent}
+    .left-controls{display:flex;gap:8px;align-items:center}
+    .addr-input{padding:8px 10px;border:1px solid rgba(255,255,255,0.06);border-radius:20px;width:420px;background:rgba(255,255,255,0.02);color:#e8eaed}
+    .btn{background:transparent;border:1px solid rgba(255,255,255,0.06);padding:6px 10px;border-radius:6px;color:#e8eaed;cursor:pointer}
+    .btn:disabled{opacity:0.4;cursor:default}
+
+    .center{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:40px 20px}
+    .logo{font-size:72px;color:#fff;font-weight:600;letter-spacing:2px}
+    .search-large{width:640px;max-width:90%;display:flex;gap:8px}
+    .search-input{flex:1;padding:14px 18px;border-radius:24px;border:1px solid rgba(0,0,0,0.06);background:#fff;font-size:16px;color:#202124}
+    .search-btn{padding:12px 18px;border-radius:20px;border:1px solid rgba(0,0,0,0.06);background:#fff;color:#202124;cursor:pointer}
+
+    /* Shortcuts (petites icônes sous la barre) */
+    .shortcuts{display:flex;gap:18px;margin-top:12px}
+    .shortcut-wrap{display:flex;flex-direction:column;align-items:center}
+    .shortcut{width:64px;height:64px;border-radius:50%;background:#1a73e8;display:flex;align-items:center;justify-content:center;color:white;font-weight:700;box-shadow:0 6px 12px rgba(0,0,0,0.6);cursor:pointer}
+    .shortcut-label{font-size:12px;color:#9aa0a6;margin-top:6px;text-align:center}
+
+    .content{height:calc(100vh - 320px);padding:0;margin:0}
+    iframe{border:none;width:100%;height:100%;background:#fff}
+
+    .footer{height:40px;display:flex;align-items:center;justify-content:center;color:#9aa0a6;font-size:13px}
+
+    /* Recherche locale (desktop) */
+    .search-results { position:absolute; top:56px; left:260px; right:20px; background:#0b0b0c; border:1px solid rgba(255,255,255,0.03); border-radius:8px; max-height:260px; overflow:auto; box-shadow:0 6px 18px rgba(0,0,0,0.6); z-index:30; }
     @media (max-width:700px){ .search-results{ left:20px; right:20px; top:110px } }
-    .search-item { padding:10px; border-bottom:1px solid rgba(255,255,255,0.02); cursor:pointer; }
+    .search-item { padding:10px; border-bottom:1px solid rgba(255,255,255,0.03); cursor:pointer; }
     .search-item:last-child{ border-bottom:none }
     .search-item:hover{ background:rgba(255,255,255,0.02); }
-    .search-title{ font-weight:600; }
-    .search-desc{ color:var(--muted); font-size:13px; margin-top:4px; }
+    .search-title{ font-weight:600; color:#e8eaed }
+    .search-desc{ color:#9aa0a6; font-size:13px; margin-top:4px; }
   </style>
 </head>
 <body>
@@ -36,7 +46,7 @@
       <button class="btn" id="back">◀</button>
       <button class="btn" id="forward">▶</button>
       <button class="btn" id="home">🏠</button>
-      <input id="address" class="addr-input" placeholder="Adresse (ex: pages/home.html)" aria-label="Barre d'adresse">
+      <input id="address" class="addr-input" placeholder="Entrez une adresse (ex: https://La Page)" aria-label="Barre d'adresse">
       <button id="addrGo" class="btn">Aller</button>
     </div>
     <div class="right-controls">
@@ -45,11 +55,22 @@
   </div>
 
   <div class="center">
-    <div class="logo">Mini Navigateur</div>
-    <div style="color:#5f6368">Recherchez dans les pages locales</div>
+    <div class="logo">Mini</div>
+    <div class="hint" style="color:#9aa0a6">Recherchez dans les pages locales</div>
     <div class="search-large">
       <input id="mainSearch" class="search-input" placeholder="Rechercher (ex: lebon)">
       <button id="searchBtn" class="search-btn">Recherche</button>
+    </div>
+
+    <div class="shortcuts" style="margin-top:12px">
+      <div class="shortcut-wrap">
+        <a class="shortcut" href="pages/le-bon-coin.html" title="Le Bon Coin">LB</a>
+        <div class="shortcut-label">Le Bon Coin</div>
+      </div>
+      <div class="shortcut-wrap">
+        <a class="shortcut" href="pages/home.html" title="Accueil">H</a>
+        <div class="shortcut-label">Accueil</div>
+      </div>
     </div>
   </div>
 
@@ -78,11 +99,28 @@
     let historyStack = [];
     let historyIndex = -1;
 
-    // Index local (titres, mots-clés, descriptions)
+    // Index local (titres, mots-clés, descriptions) - ajoutez un champ `display` pour l'URL visible
     const pagesIndex = [
-      { url: 'pages/home.html', title: 'Accueil', keywords: 'accueil home', desc: "Page d\'accueil" },
-      { url: 'pages/le-bon-coin.html', title: 'Le Bon Coin', keywords: 'lebon boncoin annonces', desc: 'Exemple: site d\'annonces (factice)' }
+      { url: 'pages/home.html', title: 'Accueil', display: 'https://La Page', keywords: 'accueil home', desc: "Page d\'accueil" },
+      { url: 'pages/le-bon-coin.html', title: 'Le Bon Coin', display: 'https://LeBonCoin', keywords: 'lebon boncoin annonces', desc: 'Exemple: site d\'annonces (factice)' },
+      { url: 'pages/search-results.html', title: 'Résultats', display: 'https://Results', keywords: 'search results', desc: 'Page listant les résultats de recherche locaux' }
     ];
+
+    // Résolution d'une entrée utilisateur (adresse ou display) vers l'URL locale réelle
+    function getPageByInput(input){
+      if (!input) return null;
+      const t = input.trim().toLowerCase();
+      // correspondance par display exact (ex: https://La Page)
+      const byDisplay = pagesIndex.find(p => (p.display||'').toLowerCase() === t);
+      if (byDisplay) return byDisplay;
+      // correspondance par titre exact
+      const byTitle = pagesIndex.find(p => (p.title||'').toLowerCase() === t);
+      if (byTitle) return byTitle;
+      // correspondance par url exacte ou suffixe
+      const byUrl = pagesIndex.find(p => p.url.toLowerCase() === t || t.endsWith(p.url.toLowerCase()) || p.url.toLowerCase().endsWith(t));
+      if (byUrl) return byUrl;
+      return null;
+    }
 
     function isExternal(url){
       return /(^[a-z]+:)|(^\/\/)|([a-z0-9-]+\.[a-z]{2,})/i.test(url) && !url.startsWith('pages/');
@@ -90,18 +128,40 @@
 
     function allowedLocal(url){
       if(!url) return false;
+      // si la résolution renvoie une page connue => autorisé
+      const p = getPageByInput(url);
+      if (p) return true;
+      // chemin local pages/
       url = url.trim();
-      if (pagesIndex.some(p => p.url.toLowerCase() === url.toLowerCase())) return true;
       if (url.startsWith('pages/') && url.toLowerCase().endsWith('.html')) return true;
       return false;
     }
 
     function navigate(url, add=true){
       if(!url) return;
-      if (isExternal(url) && !allowedLocal(url)) { showMessage('⚠️ Accès externe refusé'); return; }
-      iframe.src = url;
-      address.value = url;
-      if (add) { historyStack = historyStack.slice(0, historyIndex+1); historyStack.push(url); historyIndex = historyStack.length - 1; }
+      const input = url.trim();
+      if (isExternal(input) && !allowedLocal(input)) { showMessage('⚠️ Accès externe refusé'); return; }
+
+      const page = getPageByInput(input);
+      let target, visible;
+      if (page){
+        target = page.url;
+        visible = page.display || page.title;
+      } else if (input.startsWith('pages/') && input.toLowerCase().endsWith('.html')){
+        target = input;
+        // créer une URL visible réaliste à partir du nom de fichier
+        const parts = input.split('/');
+        const name = parts[parts.length-1].split('.').slice(0, -1).join('.');
+        visible = 'https://' + name.charAt(0).toUpperCase() + name.slice(1);
+      } else {
+        showMessage('Adresse non autorisée (seules pages locales)',4000);
+        return;
+      }
+
+      iframe.src = target;
+      address.value = visible;
+
+      if (add) { historyStack = historyStack.slice(0, historyIndex+1); historyStack.push(target); historyIndex = historyStack.length - 1; }
       updateNavButtons();
     }
 
@@ -125,7 +185,9 @@
     addrGo.addEventListener('click', ()=>{
       const v = address.value.trim();
       if(!v) return;
-      if (allowedLocal(v)) navigate(v, true);
+      const page = getPageByInput(v);
+      if (page) navigate(page.url, true);
+      else if (v.startsWith('pages/') && v.toLowerCase().endsWith('.html')) navigate(v, true);
       else showMessage('Adresse non autorisée (seules pages locales)',4000);
     });
     address.addEventListener('keydown', (e)=>{ if(e.key==='Enter') addrGo.click(); });
@@ -143,21 +205,35 @@
     });
     mainSearch.addEventListener('keydown', (e)=>{ if(e.key==='Enter') searchBtn.click(); });
 
+    // Shortcuts (assurent la navigation dans l'iframe)
+    document.querySelectorAll('.shortcut').forEach(el => {
+      el.addEventListener('click', (e)=>{ e.preventDefault(); const url = el.getAttribute('href'); navigate(url, true); });
+    });
+
     // Navigation buttons
     backBtn.addEventListener('click', ()=>{ if(historyIndex>0){ historyIndex--; navigate(historyStack[historyIndex], false); } });
     forwardBtn.addEventListener('click', ()=>{ if(historyIndex < historyStack.length -1){ historyIndex++; navigate(historyStack[historyIndex], false); } });
     homeBtn.addEventListener('click', ()=>{ navigate(DEFAULT_HOME, true); });
     reloadBtn.addEventListener('click', ()=>{ try{ iframe.contentWindow.location.reload(); }catch(e){ iframe.src = iframe.src; } });
 
-    // Mettre à jour le champ adresse quand l'iframe change (local only)
+    // Mettre à jour le champ adresse quand l'iframe change (local only) — affiche la display URL si connue
     iframe.addEventListener('load', ()=>{
       try{
         const current = iframe.contentWindow.location.href;
-        if (current.startsWith('file:')){
+        // trouver la page dont l'URL apparaît dans la location
+        const found = pagesIndex.find(p => current.toLowerCase().includes(p.url.toLowerCase()));
+        if (found){
+          address.value = found.display || found.title;
+        } else if (current.startsWith('file:')){
           const parts = current.split('/');
           const last = parts.slice(-2).join('/');
-          address.value = last;
-        } else { address.value = current; }
+          // essayer d'extraire un mapping connu
+          const byLast = pagesIndex.find(p => last.toLowerCase().endsWith(p.url.toLowerCase().split('/').pop()));
+          if (byLast) address.value = byLast.display || byLast.title;
+          else address.value = last;
+        } else {
+          address.value = current;
+        }
       }catch(e){ /* cross-origin - ignore */ }
     });
 

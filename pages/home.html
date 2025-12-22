@@ -5,21 +5,50 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Accueil - Mini Navigateur</title>
   <style>
-    body { font-family: Arial, sans-serif; padding: 20px; background: #f5f5f5; }
-    h1 { color: #333 }
-    a { color: #007bff }
-    .card { background: white; padding: 16px; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.08); }
+    body{margin:0;height:100vh;background:#000;color:#e8eaed;font-family:Arial, Helvetica, sans-serif;display:flex;flex-direction:column}
+    .center{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center}
+    .logo{font-size:72px;font-weight:700;letter-spacing:2px;margin-bottom:6px}
+    .hint{color:#9aa0a6;margin-bottom:18px}
+    .search-box{display:flex;gap:8px;width:640px;max-width:90%}
+    .search-box input{flex:1;padding:12px 16px;border-radius:24px;border:1px solid rgba(0,0,0,0.06);background:#fff;color:#202124}
+    .shortcuts{display:flex;gap:18px;margin-top:18px}
+    .shortcut{width:64px;height:64px;border-radius:50%;background:#1a73e8;display:flex;align-items:center;justify-content:center;color:white;font-weight:700;cursor:pointer}
+    .label{margin-top:6px;color:#9aa0a6;font-size:12px;text-align:center}
+    .footer{height:40px;display:flex;align-items:center;justify-content:center;color:#9aa0a6}
+    a{color:inherit}
   </style>
 </head>
 <body>
-  <div class="card">
-    <h1>Bienvenue</h1>
-    <p>Ceci est la page d'accueil du mini-navigateur.</p>
-    <ul>
-      <li><a href="home.html">Recharger cette page</a></li>
-      <li><a href="le-bon-coin.html">Voir un exemple: Le Bon Coin</a></li>
-    </ul>
-    <p>Utilisez la barre du haut pour saisir une adresse précise (ex: <code>pages/home.html</code>) ou la grande barre centrale pour effectuer une recherche générale.</p>
+  <div class="center">
+    <div class="logo">Mini</div>
+    <div class="hint">Recherchez dans les pages locales</div>
+    <div class="search-box">
+      <input id="homeSearch" placeholder="Rechercher (ex: lebon)">
+    </div>
+
+    <div class="shortcuts" aria-hidden="false">
+      <div class="shortcut-wrap">
+        <a class="shortcut" href="le-bon-coin.html" title="Le Bon Coin">LB</a>
+        <div class="label">Le Bon Coin</div>
+      </div>
+      <div class="shortcut-wrap">
+        <a class="shortcut" href="home.html" title="Accueil">H</a>
+        <div class="label">Accueil</div>
+      </div>
+    </div>
   </div>
+  <div class="footer">Navigation limitée aux pages locales</div>
+
+  <script>
+    // Petite recherche locale intégrée sur la page d'accueil pour clic rapide
+    document.getElementById('homeSearch').addEventListener('keydown', (e)=>{
+      if (e.key === 'Enter'){
+        const q = e.target.value.trim();
+        if (!q) return;
+        // rediriger vers la page de résultats
+        location.href = 'search-results.html?q=' + encodeURIComponent(q);
+      }
+    });
+  </script>
 </body>
 </html>
