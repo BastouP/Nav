@@ -53,8 +53,20 @@
         const div = document.createElement('div');
         div.className = 'result';
         const display = r.display || r.url;
-        div.innerHTML = `<a href="${r.url}">${r.title}</a><div class="desc">${r.desc} — <code style="color:#5f6368">${display}</code></div>`;
+        // Use a link that won't break because of relative paths; delegate navigation to parent
+        div.innerHTML = `<a href="#" class="result-link" data-url="${r.url}">${r.title}</a><div class="desc">${r.desc} — <code style="color:#5f6368">${display}</code></div>`;
         container.appendChild(div);
+      });
+      // Attach handlers that will call parent.navigate so the parent iframe behaves correctly
+      setTimeout(()=>{
+        document.querySelectorAll('.result-link').forEach(a => {
+          a.addEventListener('click', (e)=>{
+            e.preventDefault();
+            const url = a.dataset.url;
+            try{ parent.navigate(url, true); }catch(e){ window.location.href = url; }
+          });
+        });
+      }, 50);
       });
     }
   </script>

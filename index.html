@@ -101,24 +101,37 @@
     let historyStack = [];
     let historyIndex = -1;
 
-    // Index local (titres, mots-clés, descriptions) - ajoutez un champ `display` pour l'URL visible
-    const pagesIndex = [
-      { url: 'pages/home.html', title: 'Accueil', display: 'https://La Page', keywords: 'accueil home', desc: "Page d\'accueil" },
-      { url: 'pages/le-bon-coin.html', title: 'Le Bon Coin', display: 'https://LeBonCoin', keywords: 'lebon boncoin annonces', desc: 'Exemple: site d\'annonces (factice)' },
-      { url: 'pages/search-results.html', title: 'Résultats', display: 'https://Results', keywords: 'search results', desc: 'Page listant les résultats de recherche locaux' }
-    ];
+    // pagesIndex will be loaded from pages/pages.json (auto-generated). Keep a small fallback.
+    let pagesIndex = [];
+    async function loadPagesIndex(){
+      try{
+        const res = await fetch('pages/pages.json');
+        if (res.ok){ pagesIndex = await res.json(); }
+        else { throw new Error('fetch failed'); }
+      }catch(e){
+        // fallback if pages.json not available
+        pagesIndex = [
+          { url: 'pages/home.html', title: 'Accueil', display: 'https://lapage', keywords: 'accueil home', desc: "Page d'\'accueil" },
+          { url: 'pages/le-bon-coin.html', title: 'Le Bon Coin', display: 'https://leboncoin', keywords: 'lebon boncoin annonces', desc: 'Exemple: site d\'annonces (factice)' }
+        ];
+      }
+    }
+    // start loading the index now
+    loadPagesIndex();
 
     // Résolution d'une entrée utilisateur (adresse ou display) vers l'URL locale réelle
     function getPageByInput(input){
       if (!input) return null;
-      const t = input.trim().toLowerCase();
-      // correspondance par display exact (ex: https://La Page)
-      const byDisplay = pagesIndex.find(p => (p.display||'').toLowerCase() === t);
+      let t = input.trim().toLowerCase();
+      // strip scheme if present (https:// etc.)
+      t = t.replace(/^https?:\/\//, '').replace(/^\/\//, '').replace(/\/$/, '');
+      // correspondance par display exact (ex: https://lapage -> lapage)
+      const byDisplay = pagesIndex.find(p => ((p.display||'').toLowerCase().replace(/^https?:\/\//,'').replace(/\/$/,'') === t));
       if (byDisplay) return byDisplay;
-      // correspondance par titre exact
+      // correspondance par title exact
       const byTitle = pagesIndex.find(p => (p.title||'').toLowerCase() === t);
       if (byTitle) return byTitle;
-      // correspondance par url exacte ou suffixe
+      // correspondance par url exacte ou suffixe (pages/home.html)
       const byUrl = pagesIndex.find(p => p.url.toLowerCase() === t || t.endsWith(p.url.toLowerCase()) || p.url.toLowerCase().endsWith(t));
       if (byUrl) return byUrl;
       return null;
@@ -163,7 +176,8 @@
       // afficher la page dans la zone principale (masquer la barre centrale)
       showPageView(true);
       iframe.src = target;
-      address.value = visible;
+      // normalize visible to lowercase host-like string (no spaces)
+      address.value = (visible || '').toString().toLowerCase().replace(/\s+/g,'');
 
       if (add) { historyStack = historyStack.slice(0, historyIndex+1); historyStack.push(target); historyIndex = historyStack.length - 1; }
       updateNavButtons();

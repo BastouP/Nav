@@ -1,0 +1,37 @@
+[
+  {
+    "url": "pages/about.html",
+    "title": "À propos - Mini Navigateur",
+    "display": "https://about",
+    "keywords": "",
+    "desc": ""
+  },
+  {
+    "url": "pages/contact.html",
+    "title": "Contact - Mini Navigateur",
+    "display": "https://contact",
+    "keywords": "",
+    "desc": ""
+  },
+  {
+    "url": "pages/home.html",
+    "title": "Accueil - Mini Navigateur",
+    "display": "https://lapage",
+    "keywords": "",
+    "desc": ""
+  },
+  {
+    "url": "pages/le-bon-coin.html",
+    "title": "Le Bon Coin - Mini Navigateur",
+    "display": "https://leboncoin",
+    "keywords": "lebon,boncoin,annonces,exemple",
+    "desc": ""
+  },
+  {
+    "url": "pages/search-results.html",
+    "title": "Résultats de recherche",
+    "display": "https://searchresults",
+    "keywords": "",
+    "desc": ""
+  }
+]
