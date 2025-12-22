@@ -38,7 +38,16 @@
     const res = searchLocal(q);
     const container = document.getElementById('results');
     if(res.length===0){
-      container.innerHTML = '<div class="no">Aucun résultat local. Revenez à l\'accueil ou essayez un autre terme.</div>';
+      container.innerHTML = `<div class="no">Aucun résultat local pour "${q}".</div><div style="margin-top:12px"><button id="backToSearch" style="padding:8px 12px;border-radius:8px;border:1px solid #5f6368;background:transparent;color:#9aa0a6;cursor:pointer">Retour à la recherche</button></div>`;
+      // bouton pour revenir à la recherche dans la page parente (affiche la barre centrale)
+      setTimeout(()=>{
+        const btn = document.getElementById('backToSearch');
+        if (btn){
+          btn.addEventListener('click', ()=>{
+            try{ parent.showPageView(false); parent.mainSearch && parent.mainSearch.focus(); }catch(e){ window.location.href = 'home.html'; }
+          });
+        }
+      }, 50);
     } else {
       res.forEach(r=>{
         const div = document.createElement('div');
