@@ -51,6 +51,7 @@
       <button id="addrGo" class="btn">Aller</button>
     </div>
     <div class="right-controls">
+      <button id="showSearch" class="btn" title="Afficher recherche">🔎</button>
       <button id="reload" class="btn">⟳</button>
     </div>
   </div>
@@ -225,6 +226,10 @@
     document.querySelectorAll('.shortcut').forEach(el => {
       el.addEventListener('click', (e)=>{ e.preventDefault(); const url = el.getAttribute('href'); navigate(url, true); });
     });
+
+    // Bouton pour revenir à la recherche centrale
+    const showSearchBtn = document.getElementById('showSearch');
+    if (showSearchBtn){ showSearchBtn.addEventListener('click', ()=>{ showPageView(false); const m = document.getElementById('mainSearch'); if (m) m.focus(); }); }
     // Navigation buttons
     backBtn.addEventListener('click', ()=>{ if(historyIndex>0){ historyIndex--; navigate(historyStack[historyIndex], false); } });
     forwardBtn.addEventListener('click', ()=>{ if(historyIndex < historyStack.length -1){ historyIndex++; navigate(historyStack[historyIndex], false); } });

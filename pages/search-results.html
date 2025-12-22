@@ -44,7 +44,7 @@
         const btn = document.getElementById('backToSearch');
         if (btn){
           btn.addEventListener('click', ()=>{
-            try{ parent.showPageView(false); parent.mainSearch && parent.mainSearch.focus(); }catch(e){ window.location.href = 'home.html'; }
+            try{ parent.showPageView(false); const ms = parent.document.getElementById('mainSearch'); if(ms) ms.focus(); }catch(e){ window.location.href = 'home.html'; }
           });
         }
       }, 50);
