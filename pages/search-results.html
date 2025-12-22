@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Résultats de recherche</title>
+  <style>
+    body{font-family:Arial, sans-serif;padding:20px;background:#fff;color:#202124}
+    h1{font-size:20px;margin-bottom:8px}
+    .query{color:#5f6368;margin-bottom:18px}
+    .result{padding:12px;border-bottom:1px solid #eee}
+    .result a{color:#1a73e8;text-decoration:none;font-weight:600}
+    .desc{color:#5f6368;margin-top:6px}
+    .no{color:#888;margin-top:12px}
+  </style>
+</head>
+<body>
+  <h1>Résultats de recherche</h1>
+  <div class="query" id="queryLine"></div>
+  <div id="results"></div>
+  <script>
+    // Index local (même format que dans index)
+    const pagesIndex = [
+      { url: 'pages/home.html', title: 'Accueil', keywords: 'accueil home', desc: "Page d'accueil" },
+      { url: 'pages/le-bon-coin.html', title: 'Le Bon Coin', keywords: 'lebon boncoin annonces', desc: 'Exemple: site d\'annonces (factice)' }
+    ];
+
+    function searchLocal(q){
+      q = (q||'').trim().toLowerCase();
+      if(!q) return [];
+      return pagesIndex.map(p => ({p,score:((p.title||'').toLowerCase().includes(q)?3:0)+((p.keywords||'').toLowerCase().includes(q)?2:0)+((p.desc||'').toLowerCase().includes(q)?1:0)+((p.url||'').toLowerCase().includes(q)?1:0)})).filter(r => r.score>0).sort((a,b)=>b.score-a.score).map(r=>r.p);
+    }
+
+    const params = new URLSearchParams(location.search);
+    const q = params.get('q') || '';
+    document.getElementById('queryLine').textContent = `Rechercher: "${q}"`;
+
+    const res = searchLocal(q);
+    const container = document.getElementById('results');
+    if(res.length===0){
+      container.innerHTML = '<div class="no">Aucun résultat local. Revenez à l\'accueil ou essayez un autre terme.</div>';
+    } else {
+      res.forEach(r=>{
+        const div = document.createElement('div');
+        div.className = 'result';
+        div.innerHTML = `<a href="${r.url}">${r.title}</a><div class="desc">${r.desc} — <code style="color:#5f6368">${r.url}</code></div>`;
+        container.appendChild(div);
+      });
+    }
+  </script>
+</body>
+</html>

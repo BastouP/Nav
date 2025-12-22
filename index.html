@@ -31,178 +31,137 @@
   </style>
 </head>
 <body>
-  <div class="app">
-    <aside class="sidebar">
-      <h3>✅ Favoris</h3>
-      <a class="bookmark" href="#" data-url="pages/home.html">Accueil</a>
-      <a class="bookmark" href="#" data-url="pages/about.html">À propos</a>
-      <a class="bookmark" href="#" data-url="pages/contact.html">Contact</a>
-      <hr style="border:none;border-top:1px solid rgba(255,255,255,0.03);margin:10px 0">
-      <div style="font-size:13px;color:var(--muted)">Astuce: utilisez la barre d'adresse pour saisir une URL ou le chemin local (ex: <code>pages/about.html</code>).</div>
-    </aside>
-
-    <main class="main">
-      <div class="toolbar" style="position:relative">
-        <button class="btn" id="back">◀</button>
-        <button class="btn" id="forward">▶</button>
-        <button class="btn" id="home">🏠</button>
-        <button class="btn" id="reload">⟳</button>
-        <input id="url" type="text" placeholder="Rechercher (ex: lebon) ou saisir chemin local (ex: pages/home.html)">
-        <button class="btn" id="go">Go</button>
-        <div id="searchResults" class="search-results" style="display:none"></div>
-      </div>
-
-      <iframe id="navigateur" src=""></iframe>
-
-      <div class="footer" id="footer">Mini Navigateur — pages locales et navigation simple</div>
-    </main>
+  <div class="topbar">
+    <div class="left-controls">
+      <button class="btn" id="back">◀</button>
+      <button class="btn" id="forward">▶</button>
+      <button class="btn" id="home">🏠</button>
+      <input id="address" class="addr-input" placeholder="Adresse (ex: pages/home.html)" aria-label="Barre d'adresse">
+      <button id="addrGo" class="btn">Aller</button>
+    </div>
+    <div class="right-controls">
+      <button id="reload" class="btn">⟳</button>
+    </div>
   </div>
 
+  <div class="center">
+    <div class="logo">Mini Navigateur</div>
+    <div style="color:#5f6368">Recherchez dans les pages locales</div>
+    <div class="search-large">
+      <input id="mainSearch" class="search-input" placeholder="Rechercher (ex: lebon)">
+      <button id="searchBtn" class="search-btn">Recherche</button>
+    </div>
+  </div>
+
+  <div class="content">
+    <iframe id="navigateur" src=""></iframe>
+  </div>
+
+  <div class="footer" id="footer">Navigation limitée aux pages locales</div>
+
   <script>
-    // Navigation history simple + recherche locale + blocage d'accès externe
+    // Comportement: barre du haut = adresses précises (ouvrir page locale)
+    // champ central = recherche non précise => si 1 résultat ouvrir la page, sinon ouvrir page de résultats
+
     const iframe = document.getElementById('navigateur');
-    const input = document.getElementById('url');
-    const goBtn = document.getElementById('go');
+    const address = document.getElementById('address');
+    const addrGo = document.getElementById('addrGo');
     const backBtn = document.getElementById('back');
     const forwardBtn = document.getElementById('forward');
     const homeBtn = document.getElementById('home');
     const reloadBtn = document.getElementById('reload');
+    const mainSearch = document.getElementById('mainSearch');
+    const searchBtn = document.getElementById('searchBtn');
     const footer = document.getElementById('footer');
-    const resultsBox = document.getElementById('searchResults');
 
     const DEFAULT_HOME = 'pages/home.html';
     let historyStack = [];
     let historyIndex = -1;
 
-    // Index local des pages (titre, mots-clés, description)
+    // Index local (titres, mots-clés, descriptions)
     const pagesIndex = [
-      { url: 'pages/home.html', title: 'Accueil', keywords: 'accueil home', desc: "Page d'accueil prédéfinie" },
-      { url: 'pages/about.html', title: 'À propos', keywords: 'apropos about infos', desc: 'Informations sur le mini-navigateur' },
-      { url: 'pages/contact.html', title: 'Contact', keywords: 'contact mail email', desc: 'Page de contact pour test' },
+      { url: 'pages/home.html', title: 'Accueil', keywords: 'accueil home', desc: "Page d\'accueil" },
       { url: 'pages/le-bon-coin.html', title: 'Le Bon Coin', keywords: 'lebon boncoin annonces', desc: 'Exemple: site d\'annonces (factice)' }
     ];
 
-    function updateButtons(){
-      backBtn.disabled = historyIndex <= 0;
-      forwardBtn.disabled = historyIndex >= historyStack.length - 1 || historyIndex === -1;
-    }
-
-    function showMessage(msg, time = 3000){
-      footer.textContent = msg;
-      setTimeout(()=>{ footer.textContent = 'Mini Navigateur — pages locales et navigation simple'; }, time);
-    }
-
     function isExternal(url){
-      // simple détection: présence d'un schéma ou '//' ou domaine
       return /(^[a-z]+:)|(^\/\/)|([a-z0-9-]+\.[a-z]{2,})/i.test(url) && !url.startsWith('pages/');
     }
 
     function allowedLocal(url){
-      if (!url) return false;
+      if(!url) return false;
       url = url.trim();
-      // exact match in index
-      if (pagesIndex.some(p=>p.url.toLowerCase() === url.toLowerCase())) return true;
-      // relative path in pages/ and endsWith .html
+      if (pagesIndex.some(p => p.url.toLowerCase() === url.toLowerCase())) return true;
       if (url.startsWith('pages/') && url.toLowerCase().endsWith('.html')) return true;
       return false;
     }
 
     function navigate(url, add=true){
-      if (!url) return;
-      const trimmed = url.trim();
-      if (isExternal(trimmed) && !allowedLocal(trimmed)){
-        showMessage('⚠️ Accès externe refusé — navigation limitée aux pages locales', 4000);
-        return;
-      }
-
-      // Normaliser : si l'utilisateur a entré juste le titre exact, résoudre l'URL
-      const found = pagesIndex.find(p => p.title.toLowerCase() === trimmed.toLowerCase() || p.url.toLowerCase() === trimmed.toLowerCase());
-      const target = found ? found.url : trimmed;
-
-      iframe.src = target;
-      input.value = trimmed;
-
-      if (add){
-        historyStack = historyStack.slice(0, historyIndex + 1);
-        historyStack.push(target);
-        historyIndex = historyStack.length - 1;
-      }
-      updateButtons();
-      hideResults();
+      if(!url) return;
+      if (isExternal(url) && !allowedLocal(url)) { showMessage('⚠️ Accès externe refusé'); return; }
+      iframe.src = url;
+      address.value = url;
+      if (add) { historyStack = historyStack.slice(0, historyIndex+1); historyStack.push(url); historyIndex = historyStack.length - 1; }
+      updateNavButtons();
     }
 
-    // Recherche locale simple
-    function searchLocal(query){
-      query = (query || '').trim().toLowerCase();
-      if (!query) return [];
-      const results = pagesIndex.map(p => ({
-        p,
-        score: ((p.title||'').toLowerCase().includes(query) ? 3 : 0) + ((p.keywords||'').toLowerCase().includes(query) ? 2 : 0) + ((p.desc||'').toLowerCase().includes(query) ? 1 : 0) + ((p.url||'').toLowerCase().includes(query) ? 1 : 0)
-      })).filter(r => r.score>0).sort((a,b)=> b.score - a.score).map(r=>r.p);
-      return results;
+    function updateNavButtons(){
+      backBtn.disabled = historyIndex <= 0;
+      forwardBtn.disabled = historyIndex >= historyStack.length -1 || historyIndex === -1;
     }
 
-    function showResults(list){
-      if (!list || list.length===0){ hideResults(); return; }
-      resultsBox.innerHTML = '';
-      list.forEach(item => {
-        const el = document.createElement('div');
-        el.className = 'search-item';
-        el.innerHTML = `<div class="search-title">${item.title}</div><div class="search-desc">${item.desc} — <code style="color:var(--muted)">${item.url}</code></div>`;
-        el.addEventListener('click', ()=>{ navigate(item.url, true); });
-        resultsBox.appendChild(el);
-      });
-      resultsBox.style.display = 'block';
+    function showMessage(msg, time=3000){
+      footer.textContent = msg;
+      setTimeout(()=> footer.textContent = 'Navigation limitée aux pages locales', time);
     }
 
-    function hideResults(){ resultsBox.style.display = 'none'; resultsBox.innerHTML = ''; }
+    function searchLocal(q){
+      q = (q||'').trim().toLowerCase();
+      if(!q) return [];
+      return pagesIndex.map(p => ({p,score:((p.title||'').toLowerCase().includes(q)?3:0)+((p.keywords||'').toLowerCase().includes(q)?2:0)+((p.desc||'').toLowerCase().includes(q)?1:0)+((p.url||'').toLowerCase().includes(q)?1:0)})).filter(r => r.score>0).sort((a,b)=>b.score-a.score).map(r=>r.p);
+    }
 
-    // Buttons & handlers
-    goBtn.addEventListener('click', ()=>{ const q = input.value.trim(); const results = searchLocal(q); if(results.length===1) navigate(results[0].url, true); else if (allowedLocal(q)) navigate(q, true); else if (results.length>0) showResults(results); else { showMessage('Aucun résultat local — accès externe interdit', 3000); } });
+    // Top address handlers (précise)
+    addrGo.addEventListener('click', ()=>{
+      const v = address.value.trim();
+      if(!v) return;
+      if (allowedLocal(v)) navigate(v, true);
+      else showMessage('Adresse non autorisée (seules pages locales)',4000);
+    });
+    address.addEventListener('keydown', (e)=>{ if(e.key==='Enter') addrGo.click(); });
 
-    input.addEventListener('input', (e)=>{
-      const q = e.target.value.trim();
-      // si l'utilisateur tape un chemin local, masquer les résultats
-      if (allowedLocal(q)) { hideResults(); return }
+    // Recherche centrale (non précise)
+    searchBtn.addEventListener('click', ()=>{
+      const q = mainSearch.value.trim();
+      if(!q) return;
       const results = searchLocal(q);
-      if (results.length>0) showResults(results); else hideResults();
+      if (results.length===1){ navigate(results[0].url, true); }
+      else {
+        // ouvrir la page de résultats et transmettre la query
+        navigate('pages/search-results.html?q='+encodeURIComponent(q), true);
+      }
     });
+    mainSearch.addEventListener('keydown', (e)=>{ if(e.key==='Enter') searchBtn.click(); });
 
-    input.addEventListener('keydown', (e)=>{
-      if (e.key === 'Enter') { goBtn.click(); }
-      if (e.key === 'Escape') { hideResults(); }
-    });
-
+    // Navigation buttons
     backBtn.addEventListener('click', ()=>{ if(historyIndex>0){ historyIndex--; navigate(historyStack[historyIndex], false); } });
     forwardBtn.addEventListener('click', ()=>{ if(historyIndex < historyStack.length -1){ historyIndex++; navigate(historyStack[historyIndex], false); } });
     homeBtn.addEventListener('click', ()=>{ navigate(DEFAULT_HOME, true); });
     reloadBtn.addEventListener('click', ()=>{ try{ iframe.contentWindow.location.reload(); }catch(e){ iframe.src = iframe.src; } });
 
-    // Favoris (s'assure que la page est locale)
-    document.querySelectorAll('.bookmark').forEach(el => {
-      el.addEventListener('click', (e)=>{ e.preventDefault(); const url = el.dataset.url; if (allowedLocal(url)) navigate(url, true); else showMessage('Favori non autorisé'); });
-    });
-
-    // Mettre à jour l'URL quand iframe charge (utile si la page modifie l'historique interne)
+    // Mettre à jour le champ adresse quand l'iframe change (local only)
     iframe.addEventListener('load', ()=>{
       try{
         const current = iframe.contentWindow.location.href;
         if (current.startsWith('file:')){
           const parts = current.split('/');
           const last = parts.slice(-2).join('/');
-          input.value = last; 
-        } else {
-          input.value = current;
-        }
-      }catch(e){
-        // Cross-origin -> ne pas lire location, garder ce qui est dans input
-      }
+          address.value = last;
+        } else { address.value = current; }
+      }catch(e){ /* cross-origin - ignore */ }
     });
 
-    // Clic en dehors pour fermer les résultats
-    document.addEventListener('click', (e)=>{ if (!e.target.closest('#searchResults') && !e.target.closest('#url')) hideResults(); });
-
-    // Lancer sur la page d'accueil par défaut
+    // Démarre sur l'accueil
     navigate(DEFAULT_HOME, true);
   </script>
 </body>
