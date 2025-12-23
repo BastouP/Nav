@@ -1,0 +1,26 @@
+name: Build pages index
+
+on:
+  push:
+    paths:
+      - 'pages/**'
+      - 'scripts/**'
+      - '.github/workflows/**'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+      - name: Run index builder
+        run: python scripts/build_index.py
+      - name: Commit pages.json
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add pages/pages.json || true
+          git commit -m "chore(build): update pages index" || echo "no changes to commit"
+          git push || echo "push failed"

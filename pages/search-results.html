@@ -21,14 +21,23 @@
   <script>
     // Index local (même format que dans index). `display` est l'URL visible
     const pagesIndex = [
-      { url: 'pages/home.html', title: 'Accueil', display: 'https://La Page', keywords: 'accueil home', desc: "Page d'accueil" },
-      { url: 'pages/le-bon-coin.html', title: 'Le Bon Coin', display: 'https://LeBonCoin', keywords: 'lebon boncoin annonces', desc: 'Exemple: site d\'annonces (factice)' }
+      { url: 'pages/home.html', title: 'Accueil', display: 'https://lapage', keywords: 'accueil home', desc: "Page d'accueil" },
+      { url: 'pages/le-bon-coin.html', title: 'Le Bon Coin', display: 'https://leboncoin', keywords: 'lebon boncoin annonces', desc: 'Exemple: site d\'annonces (factice)' }
     ];
 
-    function searchLocal(q){
+    // loader: try to fetch pages/pages.json when hosted (GitHub Pages) and fallback to pagesIndex above
+    async function loadPages(){
+      try{
+        const r = await fetch('pages/pages.json');
+        if (r.ok) return await r.json();
+      }catch(e){ }
+      return pagesIndex;
+    }
+
+    function searchLocal(q, pages){
       q = (q||'').trim().toLowerCase();
       if(!q) return [];
-      return pagesIndex.map(p => ({p,score:((p.title||'').toLowerCase().includes(q)?3:0)+((p.keywords||'').toLowerCase().includes(q)?2:0)+((p.desc||'').toLowerCase().includes(q)?1:0)+((p.url||'').toLowerCase().includes(q)?1:0)})).filter(r => r.score>0).sort((a,b)=>b.score-a.score).map(r=>r.p);
+      return pages.map(p => ({p,score:((p.title||'').toLowerCase().includes(q)?3:0)+((p.keywords||'').toLowerCase().includes(q)?2:0)+((p.desc||'').toLowerCase().includes(q)?1:0)+((p.url||'').toLowerCase().includes(q)?1:0)})).filter(r => r.score>0).sort((a,b)=>b.score-a.score).map(r=>r.p);
     }
 
     const params = new URLSearchParams(location.search);
@@ -69,6 +78,61 @@
       }, 50);
       });
     }
+  </script>
+  <script>
+    // Fixup renderer: fetch the live pages index and render results (works on GH Pages)
+    (async function fixRender(){
+      const params = new URLSearchParams(location.search);
+      const q = (params.get('q')||'').trim();
+      if (!q) return; // nothing to do
+      let pages = [];
+      try{
+        const res = await fetch('pages/pages.json');
+        if (res.ok) pages = await res.json();
+      }catch(e){ }
+      if (!pages || pages.length===0){
+        pages = [
+          { url: 'pages/home.html', title: 'Accueil', display: 'https://lapage', keywords: 'accueil home', desc: "Page d'accueil" },
+          { url: 'pages/le-bon-coin.html', title: 'Le Bon Coin', display: 'https://leboncoin', keywords: 'lebon boncoin annonces', desc: 'Exemple: site d\'annonces (factice)' }
+        ];
+      }
+
+      const ql = q.toLowerCase();
+      const scored = pages.map(p => ({p,score:((p.title||'').toLowerCase().includes(ql)?3:0)+((p.keywords||'').toLowerCase().includes(ql)?2:0)+((p.desc||'').toLowerCase().includes(ql)?1:0)+((p.url||'').toLowerCase().includes(ql)?1:0)})).filter(r=>r.score>0).sort((a,b)=>b.score-a.score).map(r=>r.p);
+
+      const container = document.getElementById('results');
+      container.innerHTML = '';
+      if (scored.length===0){
+        container.innerHTML = `<div class="no">Aucun résultat local pour "${q}".</div><div style="margin-top:12px"><button id="backToSearch" style="padding:8px 12px;border-radius:8px;border:1px solid #5f6368;background:transparent;color:#9aa0a6;cursor:pointer">Retour à la recherche</button></div>`;
+        setTimeout(()=>{
+          const btn = document.getElementById('backToSearch');
+          if (btn){
+            btn.addEventListener('click', ()=>{
+              try{ parent.showPageView(false); const ms = parent.document.getElementById('mainSearch'); if(ms) ms.focus(); }catch(e){ window.location.href = 'home.html'; }
+            });
+          }
+        },50);
+      } else {
+        scored.forEach(r=>{
+          const div = document.createElement('div');
+          div.className = 'result';
+          const disp = (r.display||r.url).toLowerCase();
+          div.innerHTML = `<a href="#" class="result-link" data-url="${r.url}">${r.title}</a><div class="desc">${r.desc} — <code style="color:#5f6368">${disp}</code></div>`;
+          container.appendChild(div);
+        });
+        setTimeout(()=>{
+          document.querySelectorAll('.result-link').forEach(a => {
+            a.addEventListener('click', (e)=>{
+              e.preventDefault();
+              const url = a.dataset.url;
+              try{ parent.navigate(url, true); }catch(e){ window.location.href = url; }
+            });
+          });
+        },50);
+      }
+
+      try{ if (parent && parent.showPageView) parent.showPageView(true); }catch(e){}
+    })();
   </script>
 </body>
 </html>
