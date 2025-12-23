@@ -7,14 +7,17 @@
   <link rel="stylesheet" href="assets/app.css" />
 </head>
 <body>
-  <header class="topbar">
+
+  <!-- Top bar: visible sur results + site, cachée sur home -->
+  <header class="topbar hidden" id="topbar">
     <button class="iconbtn" id="btnBack" title="Précédent">◀</button>
+    <button class="iconbtn" id="btnHomeTop" title="Accueil">🏠</button>
     <button class="iconbtn" id="btnForward" title="Suivant">▶</button>
     <button class="iconbtn" id="btnReload" title="Recharger">⟳</button>
 
     <div class="omnibox">
       <input id="addressBar" type="text" spellcheck="false"
-             placeholder="Rechercher ou taper une adresse (ex: home, leboncoin, 10.0.0.5)" />
+             placeholder="Rechercher ou taper une adresse (ex: https://leboncoin.intra/)" />
       <button class="go" id="btnGo">Aller</button>
     </div>
 
@@ -22,35 +25,38 @@
   </header>
 
   <main class="main">
-    <section class="panel">
-      <div class="logo">Mini</div>
+    <!-- HOME view -->
+    <section class="view viewHome" id="viewHome">
+      <div class="brand">Intranet</div>
 
-      <div class="homeSearch">
-        <input id="homeSearch" type="text" spellcheck="false" placeholder="Rechercher dans les pages locales" />
+      <div class="bigSearch">
+        <input id="homeSearch" type="text" spellcheck="false" placeholder="Rechercher ou taper une adresse" />
         <button id="homeBtn">Recherche</button>
       </div>
 
-      <div class="pinnedTitle">Sites</div>
-      <div id="pinnedGrid" class="grid"></div>
-
-      <div id="results" class="results hidden">
-        <div class="resultsHeader">
-          <div id="resultsCount"></div>
-          <button class="linkbtn" id="btnHome">Accueil</button>
-        </div>
-        <div id="resultsList"></div>
+      <div class="pinnedWrap">
+        <div class="pinnedTitle">Sites</div>
+        <div id="pinnedGrid" class="grid"></div>
       </div>
 
-      <div id="notFound" class="notFound hidden">
-        <div class="nfTitle">Adresse introuvable</div>
-        <div class="nfText" id="nfText"></div>
-        <button class="linkbtn" id="btnHome2">Accueil</button>
-      </div>
-
-      <div class="hint">Navigation limitée aux pages locales</div>
+      <div class="hint">Pages locales uniquement</div>
     </section>
 
-    <section class="viewerWrap">
+    <!-- RESULTS view -->
+    <section class="view viewResults hidden" id="viewResults">
+      <div class="resultsHeader">
+        <div id="resultsCount"></div>
+      </div>
+      <div id="resultsList"></div>
+
+      <div id="notFound" class="notFound hidden">
+        <div class="nfTitle">Introuvable</div>
+        <div class="nfText" id="nfText"></div>
+      </div>
+    </section>
+
+    <!-- SITE view -->
+    <section class="view viewSite hidden" id="viewSite">
       <iframe id="viewer" class="viewer"
         sandbox="allow-scripts allow-forms allow-same-origin"></iframe>
     </section>

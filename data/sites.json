@@ -1,20 +1,31 @@
 {
   "sites": [
     {
-      "address": "home",
+      "id": "home",
+      "domain": "home.intra",
       "title": "Accueil",
-      "description": "Page d'accueil de l'intranet",
+      "description": "Portail intranet",
       "path": "pages/home.html",
       "keywords": ["accueil", "home", "start"],
       "pinned": true
     },
     {
-      "address": "leboncoin",
+      "id": "leboncoin",
+      "domain": "leboncoin.intra",
       "title": "Le Bon Coin",
       "description": "Site d'annonces (exemple)",
       "path": "pages/le-bon-coin.html",
-      "keywords": ["lebon", "boncoin", "annonces", "market"],
+      "keywords": ["leboncoin", "annonces", "market"],
       "pinned": true
+    },
+    {
+      "id": "market",
+      "domain": "market.onion",
+      "title": "Market",
+      "description": "Marché type dark web RP",
+      "path": "pages/10.0.0.5.html",
+      "keywords": ["dark", "market", "onion"],
+      "pinned": false
     }
   ]
 }
