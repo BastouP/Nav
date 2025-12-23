@@ -1,0 +1,20 @@
+{
+  "sites": [
+    {
+      "address": "home",
+      "title": "Accueil",
+      "description": "Page d'accueil de l'intranet",
+      "path": "pages/home.html",
+      "keywords": ["accueil", "home", "start"],
+      "pinned": true
+    },
+    {
+      "address": "leboncoin",
+      "title": "Le Bon Coin",
+      "description": "Site d'annonces (exemple)",
+      "path": "pages/le-bon-coin.html",
+      "keywords": ["lebon", "boncoin", "annonces", "market"],
+      "pinned": true
+    }
+  ]
+}
