@@ -1,17 +1,8 @@
 {
-  "sites": [
-    {
-      "id": "home",
-      "domain": "home.intra",
-      "title": "Accueil",
-      "description": "Portail intranet",
-      "path": "pages/home.html",
-      "keywords": ["accueil", "home", "start"],
-      "pinned": true
-    },
+  "sites": 
     {
       "id": "leboncoin",
-      "domain": "leboncoin.intra",
+      "domain": "leboncoin.fr",
       "title": "Le Bon Coin",
       "description": "Site d'annonces (exemple)",
       "path": "pages/le-bon-coin.html",
