@@ -11,12 +11,12 @@
       "pinned": true
     },
     {
-      "id": "market",
-      "domain": "market.onion",
+      "id": "10.0.0.5",
+      "domain": "10.0.0.5:8005",
       "title": "Market",
       "description": "Marché type dark web RP",
       "path": "pages/10.0.0.5.html",
-      "keywords": ["dark", "market", "onion"],
+      "keywords": [],
       "pinned": false
     }
   ]
